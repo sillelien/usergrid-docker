@@ -6,17 +6,6 @@ EXPOSE 80
 CMD ["/sbin/my_init"]
 
 ENV HOME /root
-ENV GITHUB_USER neilellis
-ENV GITHUB_PROJECT codeserver-example
-ENV GITHUB_BRANCH master
-ENV PAID_AC false
-ENV HOME /root
-ENV SLIMERJS_VERSION_M 0.9
-ENV SLIMERJS_VERSION_F 0.9.4
-ENV VERTX_VERSION 2.1.5
-ENV TYK_VERSION 1.3
-# ENV PHANTOM_VERSION 1.9.8
-
 WORKDIR /root
 
 RUN adduser --disabled-password --gecos '' app
@@ -44,7 +33,7 @@ RUN apt-get update &&  apt-get install -y pwgen ca-certificates   \
     python-dev libssl-dev  gcc build-essential  gettext --no-install-recommends
 
 
-############################### END OF PRE-REQS ################################
+############################### END OF PRE-REQS ###############################
 
 
 
@@ -54,7 +43,7 @@ RUN rm -rf /var/cache/oracle-jdk8-installer && \
     echo "JAVA_HOME=/usr/lib/jvm/java-8-oracle" >> /etc/environment
 
 # Misc
-RUN apt-get update &&  apt-get install -y oracle-java8-installer maven nginx cassandra=2.0.10 dsc20=2.0.10-1  --no-install-recommends
+RUN apt-get update &&  apt-get install -y oracle-java8-installer maven nginx --no-install-recommends
 
 
 # Tomcat
@@ -70,17 +59,15 @@ RUN wget -q https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR_VERSION
     mv apache-tomcat* /tomcat  && rm -r /tomcat/webapps/ROOT
 
 # Cassandra
-
 RUN rm -f /etc/security/limits.d/cassandra.conf
+RUN apt-get update &&  apt-get install -y cassandra=2.0.10 dsc20=2.0.10-1  --no-install-recommends
 
 #RUN wget http://www.us.apache.org/dist/cassandra/1.2.16/apache-cassandra-1.2.16-bin.tar.gz && tar -xvzf apache-cassandra-1.2.16-bin.tar.gz && mv apache-cassandra-1.2.16 /cassandra
 
-RUN git clone https://github.com/apache/incubator-usergrid.git /home/app/usergrid && ln -s /home/app /app   && mv /home/app/usergrid/portal /home/app &&  mv /home/app/usergrid/stack /home/app
+RUN  ln -s /home/app /app
 
 
-
-
-############################### END OF APPS ##################################
+############################### END OF APPS ###################################
 
 # Clean
 RUN apt-get autoremove -y && \
@@ -92,18 +79,33 @@ RUN apt-get autoremove -y && \
 
 WORKDIR /app
 
+# Prep directory structure
 VOLUME /app_var
-RUN ln -s /app_var /app/var  && mkdir /app/lib   && mkdir /app/log
-RUN mkdir -p /app/var/cassandra && mkdir -p /app/log/cassandra && chown -R app:app /app/var/cassandra && chown -R app:app /app/log/cassandra  && ln -s  /app/var/cassandra /var/lib/cassandra && ln -s /app/log/cassandra /var/log/cassandra
-RUN cd /app/stack && mvn clean install -DskipTests=true
+RUN ln -s /app_var /home/app/var  && mkdir /home/app/lib   && mkdir /home/app/log
+RUN chown -R app:app  /home/app /app_var /var/lib/cassandra /var/log/cassandra  /tomcat/webapps && chown -h app:app /app /home/app/var
+RUN  ln -s /var/lib/cassandra /home/app/var/cassandra  && ln -s /var/log/cassandra /home/app/log/cassandra && chown -h  app:app  /home/app/log/cassandra  /home/app/var/cassandra
 
+USER app
+
+# Build server
+RUN git clone https://github.com/apache/incubator-usergrid.git /home/app/usergrid && mv /home/app/usergrid/stack /home/app
+RUN cd /app/stack && mvn clean install -q -DskipTests=true
+
+# Add config
 COPY etc/ /app/etc/
+
+#Setup tomcat
 RUN cp /app/stack/rest/target/ROOT.war /tomcat/webapps/ && cp /app/etc/usergrid.properties /tomcat/lib/
 
+# Build Portal
+RUN mv /home/app/usergrid/portal /home/app
 RUN cd /app/portal && chmod u+x build.sh
 RUN cd /app/portal && ./build.sh
-RUN cd /tomcat/webapps && tar -xvf /app/portal/dist/usergrid-portal.tar && mv usergrid* usergrid
 
+# Add to Tomcat
+RUN tar -xvf /app/portal/dist/usergrid-portal.tar && mv usergrid-portal* /app/public
+
+# Prepare rinit processes
 RUN mkdir /etc/service/tomcat /etc/service/init /etc/service/nginx /etc/service/cassandra /app/tmp
 
 COPY bin/ /app/bin/
@@ -115,6 +117,9 @@ RUN cp /app/etc/nginx.conf /etc/nginx/nginx.conf && \
     cp /app/bin/cassandra.sh /etc/service/cassandra/run
 
 RUN chmod 755 /etc/service/init/run /etc/service/tomcat/run  /etc/service/nginx/run  /etc/service/cassandra/run
-RUN rm -rf /app/.m2  && rm -rf /app/portal  && rm -rf /app/stack && rm -rf /app/usergrid  && chown -R app:app /app /tomcat/webapps && chown -h app:app /app   /app/log/cassandra   /app/var/cassandra
+
+# Clean up
+RUN rm -rf /app/.m2  && rm -rf /app/portal  && rm -rf /app/stack && rm -rf /app/usergrid
 
 
+############################### END OF BUILD ##################################
