@@ -1,0 +1,29 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  cache_directories:
+    - "~/docker"
+
+  override:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS tutum.co
+      - docker build -t neilellis/usergrid-docker .
+
+test:
+  override:
+    -  'cont=$(docker run -d -p 8080:80 neilellis/usergrid-docker) ; sleep 30 ; docker logs $cont ;  res=$( curl -w %{http_code} -s --output /dev/null  http://localhost:8080/neilellis/codeserver-example/master)  ; [ "$res" == "200" ] || ( echo "Failed with $res" ; exit 1 ) ; sleep 1 ; docker logs $cont'
+
+deployment:
+  all:
+    branch: /.*/
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS tutum.co
+      - docker tag -f neilellis/usergrid-docker tutum.co/neilellis/usergrid-docker:${CIRCLE_BRANCH}
+      - docker push tutum.co/neilellis/usergrid-docker:${CIRCLE_BRANCH}
+
+
+notify:
+  webhooks:
+    - url: https://dashboard.tutum.co/api/v1/service/afd62fd8-9c09-46a5-b09c-914c8b38289a/webhook/handler/48cfb619-caf9-43a2-abd4-8338c2b7cdeb/call/
+
