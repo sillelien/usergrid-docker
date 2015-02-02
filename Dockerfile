@@ -111,8 +111,7 @@ ENV MAIL_USER ""
 ENV MAIL_PASSWORD ""
 
 #Setup tomcat
-RUN cp /app/stack/rest/target/ROOT.war /tomcat/webapps/ && \
-    envsubst '$ADMIN_EMAIL:$ADMIN_PASSWORD:$USERGRID_URL:$MAIL_USER:$MAIL_PASSWORD:$MAIL_HOST:$MAIL_PORT' < /app/etc/usergrid.properties > /tomcat/lib/usergrid.properties
+RUN cp /app/stack/rest/target/ROOT.war /tomcat/webapps/
 
 # Build Portal
 RUN mv /home/app/usergrid/portal /home/app
