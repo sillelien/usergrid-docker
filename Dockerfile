@@ -37,12 +37,12 @@ RUN apt-get update &&  apt-get install -y pwgen ca-certificates   \
 
 
 # Java
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
-RUN rm -rf /var/cache/oracle-jdk8-installer && \
-    echo "JAVA_HOME=/usr/lib/jvm/java-8-oracle" >> /etc/environment
+ENV JAVA_HOME /usr/lib/jvm/java-7-oracle
+RUN rm -rf /var/cache/oracle-jdk7-installer && \
+    echo "JAVA_HOME=/usr/lib/jvm/java-7-oracle" >> /etc/environment
 
 # Misc
-RUN apt-get update &&  apt-get install -y oracle-java8-installer maven nginx --no-install-recommends
+RUN apt-get update &&  apt-get install -y oracle-java7-installer maven nginx --no-install-recommends
 
 
 # Tomcat
@@ -85,15 +85,15 @@ VOLUME /home/app/var
 VOLUME /var/lib/cassandra
 
 RUN mkdir /home/app/lib   && mkdir /home/app/log   && mkdir /home/app/tmp
-RUN chown -R app:app  /home/app  /var/lib/cassandra /var/log/cassandra  /tomcat && chown -h app:app /app /home/app/var
-RUN ln -s /var/log/cassandra /home/app/log/cassandra && chown -h  app:app  /home/app/log/cassandra
+RUN chown -R app:app  /home/app  /tomcat && chown -h app:app /app /home/app/var
+RUN ln -s /var/log/cassandra /home/app/log/cassandra
 
 USER app
 ENV HOME /home/app
 WORKDIR /home/app
 
 # Build server
-ENV USERGRID_BRANCH 1.0.1
+ENV USERGRID_BRANCH master
 RUN git clone https://github.com/neilellis/incubator-usergrid.git /home/app/usergrid  && \
     cd /home/app/usergrid && git checkout ${USERGRID_BRANCH}
 RUN cd /home/app/usergrid && mv /home/app/usergrid/stack /home/app
@@ -141,6 +141,8 @@ RUN chmod 755 /etc/service/init/run /etc/service/tomcat/run  /etc/service/nginx/
 
 # Clean up
 RUN rm -rf /app/.m2  && rm -rf /app/portal  && rm -rf /app/stack && rm -rf /app/usergrid
+
+RUN ls -lad /var/lib/cassandra
 
 
 ############################### END OF BUILD ##################################
