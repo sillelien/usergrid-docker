@@ -116,11 +116,11 @@ RUN cp /app/stack/rest/target/ROOT.war /tomcat/webapps/ && \
 
 # Build Portal
 RUN mv /home/app/usergrid/portal /home/app
-RUN cd /app/portal && chmod u+x build.sh  && npm-install-missing
-RUN cd /app/portal && ./build.sh
+RUN cd /home/app/portal && chmod u+x /home/app/portal/build.sh  && npm-install-missing
+RUN cd /home/app/portal && ./build.sh
 
 # Add to Tomcat
-RUN tar -xvf /app/portal/dist/usergrid-portal.tar && mv usergrid-portal* /app/public
+RUN tar -xvf /home/app/portal/dist/usergrid-portal.tar && mv usergrid-portal* /home/app/public
 
 COPY bin/ /app/bin/
 
