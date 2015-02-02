@@ -8,7 +8,11 @@ dependencies:
 
   override:
       - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS tutum.co
-      - docker build -t neilellis/usergrid-docker .
+    - "if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi" :
+        timeout: 600
+    - docker build -t neilellis/usergrid-docker .
+    - "if [[ ! -e ~/docker/image.tar ]]; then mkdir -p ~/docker ; fi ; docker save neilellis/usergrid-docker > ~/docker/image.tar" :
+        timeout: 600
 
 test:
   override:
