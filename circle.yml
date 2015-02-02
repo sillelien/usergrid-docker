@@ -16,7 +16,7 @@ dependencies:
 
 test:
   override:
-    -  'cont=$(docker run -d -p 8080:80 neilellis/usergrid-docker) ; sleep 30 ; docker logs $cont ;  res=$( curl -w %{http_code} -s --output /dev/null  http://localhost:8080/neilellis/codeserver-example/master)  ; [ "$res" == "200" ] || ( echo "Failed with $res" ; exit 1 ) ; sleep 1 ; docker logs $cont'
+    -  'cont=$(docker run -d -p 8080:80 neilellis/usergrid-docker) ; sleep 30 ; docker logs $cont ;  curl  http://localhost:8080/status | grep "true"  ; sleep 1 ; docker logs $cont'
 
 deployment:
   all:

@@ -109,6 +109,7 @@ ENV MAIL_HOST mail.example.com
 ENV MAIL_PORT 123
 ENV MAIL_USER ""
 ENV MAIL_PASSWORD ""
+ENV CASS_URL localhost:9160
 
 #Setup tomcat
 RUN cp /app/stack/rest/target/ROOT.war /tomcat/webapps/
