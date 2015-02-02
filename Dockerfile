@@ -66,6 +66,9 @@ RUN apt-get update &&  apt-get install -y cassandra=2.0.10 dsc20=2.0.10-1  --no-
 
 RUN  ln -s /home/app /app
 
+RUN npm install -g npm@2.1.1 && \
+    npm cache clear  && \
+    npm install -g  npm-check-updates npm-install-missing pm2
 
 ############################### END OF APPS ###################################
 
@@ -77,44 +80,62 @@ RUN apt-get autoremove -y && \
 ############################### END OF INSTALLS ###############################
 
 
-WORKDIR /app
 
 # Prep directory structure
-VOLUME /app_var
-RUN ln -s /app_var /home/app/var  && mkdir /home/app/lib   && mkdir /home/app/log
-RUN chown -R app:app  /home/app /app_var /var/lib/cassandra /var/log/cassandra  /tomcat/webapps && chown -h app:app /app /home/app/var
-RUN  ln -s /var/lib/cassandra /home/app/var/cassandra  && ln -s /var/log/cassandra /home/app/log/cassandra && chown -h  app:app  /home/app/log/cassandra  /home/app/var/cassandra
+VOLUME /home/app/var
+VOLUME /var/lib/cassandra
+
+RUN mkdir /home/app/lib   && mkdir /home/app/log   && mkdir /home/app/tmp
+RUN chown -R app:app  /home/app  /var/lib/cassandra /var/log/cassandra  /tomcat && chown -h app:app /app /home/app/var
+RUN ln -s /var/log/cassandra /home/app/log/cassandra && chown -h  app:app  /home/app/log/cassandra
 
 USER app
+ENV HOME /home/app
+WORKDIR /home/app
 
 # Build server
-RUN git clone https://github.com/apache/incubator-usergrid.git /home/app/usergrid && mv /home/app/usergrid/stack /home/app
-RUN cd /app/stack && mvn clean install -q -DskipTests=true
+RUN git clone https://github.com/neilellis/incubator-usergrid.git /home/app/usergrid  && \
+    cd /home/app/usergrid && git checkout v1.0
+RUN cd /home/app/usergrid && mv /home/app/usergrid/stack /home/app
+RUN cd /app/stack && mvn -q -DskipTests=true -Dproject.build.sourceEncoding="UTF-8"  clean install
 
 # Add config
 COPY etc/ /app/etc/
 
+ENV ADMIN_EMAIL me@example.com
+ENV ADMIN_PASSWORD admin
+ENV USERGRID_URL http://localhost:8080/
+ENV MAIL_HOST mail.example.com
+ENV MAIL_PORT 123
+ENV MAIL_USER ""
+ENV MAIL_PASSWORD ""
+
 #Setup tomcat
-RUN cp /app/stack/rest/target/ROOT.war /tomcat/webapps/ && cp /app/etc/usergrid.properties /tomcat/lib/
+RUN cp /app/stack/rest/target/ROOT.war /tomcat/webapps/ && \
+    envsubst '$ADMIN_EMAIL:$ADMIN_PASSWORD:$USERGRID_URL:$MAIL_USER:$MAIL_PASSWORD:$MAIL_HOST:$MAIL_PORT' < /app/etc/usergrid.properties > /tomcat/lib/usergrid.properties
 
 # Build Portal
 RUN mv /home/app/usergrid/portal /home/app
-RUN cd /app/portal && chmod u+x build.sh
+RUN cd /app/portal && chmod u+x build.sh  && npm-install-missing
 RUN cd /app/portal && ./build.sh
 
 # Add to Tomcat
 RUN tar -xvf /app/portal/dist/usergrid-portal.tar && mv usergrid-portal* /app/public
 
-# Prepare rinit processes
-RUN mkdir /etc/service/tomcat /etc/service/init /etc/service/nginx /etc/service/cassandra /app/tmp
-
 COPY bin/ /app/bin/
+
+USER root
+RUN chown app:app /app/bin/* && chmod 755 /app/bin/*
+
+# Prepare rinit processes
+RUN mkdir /etc/service/tomcat /etc/service/init /etc/service/nginx /etc/service/cassandra
 
 RUN cp /app/etc/nginx.conf /etc/nginx/nginx.conf && \
     cp /app/bin/init.sh /etc/service/init/run && \
     cp /app/bin/nginx.sh /etc/service/nginx/run && \
     cp /app/bin/tomcat.sh /etc/service/tomcat/run && \
     cp /app/bin/cassandra.sh /etc/service/cassandra/run
+
 
 RUN chmod 755 /etc/service/init/run /etc/service/tomcat/run  /etc/service/nginx/run  /etc/service/cassandra/run
 
