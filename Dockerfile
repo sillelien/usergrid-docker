@@ -1,6 +1,5 @@
 FROM phusion/baseimage:0.9.16
 MAINTAINER Neil Ellis hello@neilellis.me
-VOLUME /data
 EXPOSE 80
 
 CMD ["/sbin/my_init"]
@@ -94,8 +93,9 @@ ENV HOME /home/app
 WORKDIR /home/app
 
 # Build server
+ENV USERGRID_BRANCH v1.0
 RUN git clone https://github.com/neilellis/incubator-usergrid.git /home/app/usergrid  && \
-    cd /home/app/usergrid && git checkout v1.0
+    cd /home/app/usergrid && git checkout ${USERGRID_BRANCH}
 RUN cd /home/app/usergrid && mv /home/app/usergrid/stack /home/app
 RUN cd /app/stack && mvn -q -DskipTests=true -Dproject.build.sourceEncoding="UTF-8"  clean install
 
