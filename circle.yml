@@ -7,7 +7,7 @@ dependencies:
     - "~/docker"
 
   override:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS tutum.co
+    - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS tutum.co
     - "if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi" :
         timeout: 600
     - docker build -t neilellis/usergrid-docker .
