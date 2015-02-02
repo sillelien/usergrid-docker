@@ -93,7 +93,7 @@ ENV HOME /home/app
 WORKDIR /home/app
 
 # Build server
-ENV USERGRID_BRANCH v1.0
+ENV USERGRID_BRANCH 1.0.1
 RUN git clone https://github.com/neilellis/incubator-usergrid.git /home/app/usergrid  && \
     cd /home/app/usergrid && git checkout ${USERGRID_BRANCH}
 RUN cd /home/app/usergrid && mv /home/app/usergrid/stack /home/app
