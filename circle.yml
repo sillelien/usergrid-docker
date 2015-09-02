@@ -7,27 +7,27 @@ dependencies:
     - "~/docker"
 
   override:
-    - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS tutum.co
+    - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+    - npm install npm-install-missing -g
     - "if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi" :
         timeout: 600
-    - docker build -t neilellis/usergrid-docker .
-    - "if [[ ! -d ~/docker ]]; then mkdir -p ~/docker ; fi ; docker save neilellis/usergrid-docker > ~/docker/image.tar" :
+    - "if [[ ! -d ~/docker ]]; then mkdir -p ~/docker ; fi ; docker save usergrid > ~/docker/image.tar" :
         timeout: 600
 
 test:
   override:
-    -  'cont=$(docker run -d -p 8080:80 neilellis/usergrid-docker) ; sleep 30 ; docker logs $cont ;  curl  http://localhost:8080/status | grep "true"  ; sleep 1 ; docker logs $cont'
+    -  'cont=$(docker run -d -p 8080:80 usergrid ) ; sleep 30 ; docker logs $cont ;  curl  http://localhost:8080/status | grep "true"  ; sleep 1 ; docker logs $cont'
 
 deployment:
   all:
     branch: /.*/
     commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS tutum.co
-      - docker tag -f neilellis/usergrid-docker tutum.co/neilellis/usergrid-docker:${CIRCLE_BRANCH}
-      - docker push tutum.co/neilellis/usergrid-docker:${CIRCLE_BRANCH}
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+      - docker tag -f usergrid sillelien/usergrid:${CIRCLE_BRANCH}
+      - docker push sillelien/usergrid:${CIRCLE_BRANCH}
 
 
-notify:
-  webhooks:
-    - url: https://dashboard.tutum.co/api/v1/service/afd62fd8-9c09-46a5-b09c-914c8b38289a/webhook/handler/48cfb619-caf9-43a2-abd4-8338c2b7cdeb/call/
-
+#notify:
+#  webhooks:
+#    - url: https://dashboard.tutum.co/api/v1/service/afd62fd8-9c09-46a5-b09c-914c8b38289a/webhook/handler/48cfb619-caf9-43a2-abd4-8338c2b7cdeb/call/
+#
