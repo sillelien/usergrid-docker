@@ -1,4 +1,5 @@
-#!/bin/bash -eux
+#!/usr/bin/with-contenv  bash
+set -eux
 if [ ! -f /.tomcat_admin_created ]; then
     /app/bin/create_tomcat_user.sh
 fi
@@ -13,4 +14,4 @@ do
     echo "Waiting for cassandra..."
 done
 sleep 20
-/sbin/setuser app /tomcat/bin/catalina.sh run
+s6-setuidgid app /tomcat/bin/catalina.sh run

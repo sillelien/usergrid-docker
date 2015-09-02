@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/with-contenv  bash
 
 if [ -f /.tomcat_admin_created ]; then
     echo "Tomcat 'admin' user already created"

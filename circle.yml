@@ -9,17 +9,17 @@ dependencies:
   override:
     - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
     - npm install npm-install-missing -g
-    - "if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi" :
+    -  " if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi " :
         timeout: 600
     - ./build.sh
-    - "if [[ ! -d ~/docker ]]; then mkdir -p ~/docker ; fi ; docker save usergrid > ~/docker/image.tar" :
+    - " if [[ ! -d ~/docker ]]; then mkdir -p ~/docker ; fi ; docker save usergrid > ~/docker/image.tar"  :
         timeout: 600
 
 test:
   override:
 #    -  'cont=$(docker run -d -p 8080:80 usergrid ) ; sleep 30 ; docker logs $cont ;  curl  http://localhost:8080/status | grep "true"  ; sleep 1 ; docker logs $cont'
       - echo "No tests yet"
-      
+
 deployment:
   all:
     branch: /.*/
