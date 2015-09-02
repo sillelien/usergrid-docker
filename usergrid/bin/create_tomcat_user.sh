@@ -1,9 +1,11 @@
+#!/usr/bin/env bash
 
 if [ -f /.tomcat_admin_created ]; then
     echo "Tomcat 'admin' user already created"
     exit 0
 fi
 
+export CATALINA_HOME=/tomcat
 #generate password
 PASS=${TOMCAT_PASS:-$(pwgen -s 12 1)}
 _word=$( [ ${TOMCAT_PASS} ] && echo "preset" || echo "random" )
