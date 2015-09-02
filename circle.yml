@@ -11,6 +11,7 @@ dependencies:
     - npm install npm-install-missing -g
     - "if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi" :
         timeout: 600
+    - ./build.sh
     - "if [[ ! -d ~/docker ]]; then mkdir -p ~/docker ; fi ; docker save usergrid > ~/docker/image.tar" :
         timeout: 600
 
