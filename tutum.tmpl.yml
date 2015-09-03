@@ -1,10 +1,18 @@
 cass:
   image: sillelien/ug-cassandra:${RELEASE}
-  volumes:
-    - ./tmp/var/lib/cassandra/:/var/lib/cassandra/
+  volumes_from:
+    - cass_vol
   ports:
-    - 9042
-    - 9160
+    - "9042"
+    - "9160"
+
+cass_vol:
+   image: sillelien/jessie
+   command: sleep 2147483647
+   mem_limit: 64m
+   volumes:
+     - /var/lib/ug-cassandra/:/var/lib/cassandra/
+
 
 usergrid:
   image: sillelien/usergrid:${RELEASE}

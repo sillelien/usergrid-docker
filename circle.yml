@@ -27,10 +27,10 @@ deployment:
   all:
     branch: master
     commands:
-      - docker tag -f usergrid sillelien/usergrid
-      - docker tag -f cassandra sillelien/ug-cassandra
-      - docker push sillelien/ug-cassandra
-      - docker push sillelien/usergrid
+      - docker tag -f usergrid sillelien/usergrid:$(cat .release)
+      - docker tag -f cassandra sillelien/ug-cassandra:$(cat .release)
+      - docker push sillelien/ug-cassandra:$(cat .release)
+      - docker push sillelien/usergrid:$(cat .release)
 
   release:
     branch: /0.*/
