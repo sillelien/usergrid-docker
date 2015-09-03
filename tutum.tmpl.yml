@@ -1,0 +1,14 @@
+cass:
+  image: sillelien/cassandra:${RELEASE}
+  volumes:
+    - ./tmp/var/lib/cassandra/:/var/lib/cassandra/
+  ports:
+    - 9042
+    - 9160
+
+usergrid:
+  image: sillelien/usergrid:${RELEASE}
+  ports:
+    - 8080:80
+  links:
+    - cass:cass

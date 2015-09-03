@@ -9,6 +9,7 @@ dependencies:
     - "~/docker"
 
   override:
+    - cd ~ && git clone https://github.com/sillelien/build-utils.git && chmod a+x ~/build-utils/*.sh
     - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
     - npm install npm-install-missing -g
     -  " if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi " :
@@ -24,12 +25,25 @@ test:
 
 deployment:
   all:
-    branch: /.*/
+    branch: master
     commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker tag -f usergrid sillelien/usergrid:${CIRCLE_BRANCH}
-      - docker push sillelien/usergrid:${CIRCLE_BRANCH}
+      - docker tag -f usergrid sillelien/usergrid
+      - docker tag -f cassandra sillelien/cassandra
+      - docker push sillelien/cassandra
+      - docker push sillelien/usergrid
 
+  release:
+    branch: /0.*/
+    commands:
+         - ~/build-utils/promote_from_staging.sh
+
+  staging:
+    branch: staging
+    commands:
+      - docker tag -f usergrid sillelien/usergrid
+      - docker tag -f cassandra sillelien/cassandra
+      - docker push sillelien/cassandra
+      - docker push sillelien/usergrid
 
 #notify:
 #  webhooks:

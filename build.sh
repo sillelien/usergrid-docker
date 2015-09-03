@@ -23,3 +23,6 @@ cd ..
 cd ..
 cd ..
 docker build -t usergrid .
+cd ..
+cd cassandra
+docker build -t cassandra .
