@@ -4,6 +4,9 @@ cd usergrid
 mkdir -p build
 cd build
 mkdir -p dist
+[ -f dsc-cassandra-2.1.9-bin.tar.gz ] || wget http://downloads.datastax.com/community/dsc-cassandra-2.1.9-bin.tar.gz -O dsc-cassandra-2.1.9-bin.tar.gz
+[ -d dsc-cassandra-2.1.9 ] || tar -xvzf dsc-cassandra-2.1.9-bin.tar.gz
+[ -d cassandra ] || ( rm -rf dist/cassandra && cp -r dsc-cassandra-2.1.9 dist/cassandra )
 [ -d usergrid ] || git clone https://github.com/apache/usergrid.git usergrid
 cd usergrid
 git checkout ${USERGRID_BRANCH}

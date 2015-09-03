@@ -9,7 +9,7 @@ RUN adduser --disabled-password --gecos '' app
 
 
 # Install Base Packages
-RUN apt-get update &&  apt-get install -y pwgen ca-certificates nginx wget curl gettext --no-install-recommends && \
+RUN apt-get update &&  apt-get install -y socat pwgen ca-certificates nginx wget curl gettext --no-install-recommends && \
     apt-get clean all -y && apt-get purge -y && apt-get autoremove -y && rm -rf /tmp/* /var/lib/apt/lists/*
 
 
@@ -52,7 +52,7 @@ COPY etc/ /home/app/etc/
 
 ENV ADMIN_EMAIL me@example.com
 ENV ADMIN_PASSWORD admin
-ENV USERGRID_URL http://localhost:8080/
+ENV USERGRID_URL http://localhost:8080
 ENV MAIL_HOST mail.example.com
 ENV MAIL_PORT 123
 ENV MAIL_USER ""
@@ -63,7 +63,11 @@ ENV MAIL_PASSWORD ""
 COPY build/dist/ROOT.war /tomcat/webapps/
 
 # Build Portal
-COPY build/dist/usergrid-portal.tar /tmp/home/app/public
+COPY build/dist/usergrid-portal.tar /tmp/
+RUN   cd /home/app && tar -xvf /tmp/usergrid-portal.tar && mv usergrid-portal.* public
+RUN ls -la /home/app/public
+
+COPY build/dist/cassandra /cassandra
 
 COPY bin/ /home/app/bin/
 
@@ -80,3 +84,6 @@ RUN chmod 755 /etc/cont-init.d/usergrid /etc/services.d/nginx/run  /etc/services
 
 
 ############################### END OF BUILD ##################################
+
+EXPOSE 8080
+CMD ["sleep","2147483647"]
