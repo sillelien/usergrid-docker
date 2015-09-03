@@ -15,7 +15,7 @@ dependencies:
     -  " if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi " :
         timeout: 600
     - ./build.sh
-    - " if [[ ! -d ~/docker ]]; then mkdir -p ~/docker ; fi ; docker save usergrid > ~/docker/image.tar"  :
+    - " if [[ ! -f ~/docker/image.tar ]]; then mkdir -p ~/docker ; fi ; docker save usergrid > ~/docker/image.tar"  :
         timeout: 600
 
 test:
@@ -28,8 +28,8 @@ deployment:
     branch: master
     commands:
       - docker tag -f usergrid sillelien/usergrid
-      - docker tag -f cassandra sillelien/cassandra
-      - docker push sillelien/cassandra
+      - docker tag -f cassandra sillelien/ug-cassandra
+      - docker push sillelien/ug-cassandra
       - docker push sillelien/usergrid
 
   release:
@@ -41,8 +41,8 @@ deployment:
     branch: staging
     commands:
       - docker tag -f usergrid sillelien/usergrid
-      - docker tag -f cassandra sillelien/cassandra
-      - docker push sillelien/cassandra
+      - docker tag -f cassandra sillelien/ug-cassandra
+      - docker push sillelien/ug-cassandra
       - docker push sillelien/usergrid
 
 #notify:

@@ -1,5 +1,5 @@
 cass:
-  image: sillelien/cassandra:${RELEASE}
+  image: sillelien/ug-cassandra:${RELEASE}
   volumes:
     - ./tmp/var/lib/cassandra/:/var/lib/cassandra/
   ports:
